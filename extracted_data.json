@@ -1,0 +1,54 @@
+{
+  "company_name": "PT BUMI RESOURCES Tbk",
+  "report_period": "31 Maret 2025",
+  "currency": "USD",
+  "is_psak_111": true,
+  "balance_sheet": {
+    "total_assets": {
+      "raw_text": "TOTAL ASET",
+      "value": 4059531320.0
+    },
+    "total_liabilities": {
+      "raw_text": "Total Liabilitas",
+      "value": 1165995582.0
+    },
+    "total_equity": {
+      "raw_text": "Ekuitas - Neto",
+      "value": 2893535737.0
+    },
+    "current_assets": {
+      "raw_text": "Aset Lancar",
+      "value": 740952848.0
+    },
+    "current_liabilities": {
+      "raw_text": "Liabilitas Jangka Pendek",
+      "value": 715396904.0
+    },
+    "cash_equivalents": {
+      "raw_text": "Kas dan Setara Kas",
+      "value": 37120436.0
+    },
+    "inventories": {
+      "raw_text": "Persediaan",
+      "value": 50539507.0
+    }
+  },
+  "income_statement": {
+    "revenues": {
+      "raw_text": "PENDAPATAN",
+      "value": 348777533.0
+    },
+    "gross_profit": {
+      "raw_text": "LABA BRUTO",
+      "value": 51248957.0
+    },
+    "net_income": {
+      "raw_text": "Total Laba Periode Berjalan Yang Dapat Diatribusikan Kepada: Pemilik Entitas Induk",
+      "value": 17866112.0
+    },
+    "finance_cost": {
+      "raw_text": "Beban Bunga dan Keuangan",
+      "value": -4374624.0
+    }
+  }
+}
