@@ -9,7 +9,11 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
+# client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
+client = OpenAI(
+    api_key=os.environ.get("XAI_API_KEY"),
+    base_url="https://api.x.ai/v1", # The xAI API base URL
+)
 
 def extract_text_from_pdf(pdf_path: str, max_pages: int = 20) -> List[str]:
     """
@@ -36,51 +40,69 @@ def extract_text_from_pdf(pdf_path: str, max_pages: int = 20) -> List[str]:
 def filter_relevant_pages(pages_text: List[str]) -> Dict[str, List[int]]:
     """
     Identifies relevant pages for Balance Sheet (Posisi Keuangan) and Income Statement (Laba Rugi)
-    based on keyword density and heuristics.
-    Returns a dictionary with keys 'balance_sheet' and 'income_statement' containing lists of page indices.
+    by detecting the start and end of each section.
     """
     relevant_pages = {
         'balance_sheet': [],
         'income_statement': []
     }
     
-    # Keywords
-    kw_bs = ["laporan posisi keuangan", "statement of financial position", "jumlah aset", "total assets"]
-    kw_is = ["laporan laba rugi", "statement of profit or loss", "laba rugi", "pendapatan", "revenue"]
+    # 1. Keywords for Start
+    kw_bs_start = ["laporan posisi keuangan", "statement of financial position"]
+    kw_is_start = ["laporan laba rugi", "statement of profit or loss", "laba rugi dan penghasilan komprehensif"]
     
-    # Exclude keywords to avoid Table of Contents or Notes
-    kw_exclude = ["daftar isi", "content", "catatan atas", "notes to"]
+    # 2. Keywords for End (Termination)
+    kw_bs_end = ["jumlah liabilitas dan ekuitas", "total liabilities and equity"]
+    kw_is_end = ["laba (rugi) per saham", "earnings (loss) per share", "laba per saham"]
+
+    # 3. Exclude keywords (like Table of Contents)
+    kw_exclude = ["daftar isi", "table of contents"]
+    kw_stop_all = ["catatan atas laporan keuangan", "notes to the financial statements"]
+
+    current_section = None # 'bs' or 'is'
 
     for i, text in enumerate(pages_text):
         text_lower = text.lower()
         
-        # Simple exclusion
-        if any(ex in text_lower for ex in kw_exclude):
-             # But be careful, sometimes actual tables have "notes" column. 
-             # Check if it's strictly a TOC page? For now, let's keep it simple.
-             # If "daftar isi" is in the first few lines, skip.
-             header = text_lower[:500]
-             if "daftar isi" in header or "table of contents" in header:
-                 continue
+        # Skip Table of Contents
+        if any(ex in text_lower[:500] for ex in kw_exclude):
+            continue
+            
+        # Global stop for primary statements
+        if any(stop in text_lower[:500] for stop in kw_stop_all):
+            current_section = None
+            # We don't continue because we might hit another section start on the same page? 
+            # Usually notes start on its own page.
+            # But let's check for starts below.
 
-        # Score for Balance Sheet
-        score_bs = sum(1 for kw in kw_bs if kw in text_lower)
-        
-        # Score for Income Statement
-        score_is = sum(1 for kw in kw_is if kw in text_lower)
-        
-        # Thresholds (adjust as needed)
-        if score_bs >= 2:
+        # Check for Start of Balance Sheet
+        if any(kw in text_lower[:1000] for kw in kw_bs_start):
+            current_section = 'bs'
             relevant_pages['balance_sheet'].append(i)
-            
-        if score_is >= 2:
+            # Check if it also ends on the same page
+            if any(kw in text_lower for kw in kw_bs_end):
+                current_section = None
+            continue
+
+        # Check for Start of Income Statement
+        if any(kw in text_lower[:1000] for kw in kw_is_start):
+            current_section = 'is'
             relevant_pages['income_statement'].append(i)
+            # Check if it also ends on the same page
+            if any(kw in text_lower for kw in kw_is_end):
+                current_section = None
+            continue
+
+        # If we are already in a section, continue adding pages until end is found
+        if current_section == 'bs':
+            relevant_pages['balance_sheet'].append(i)
+            if any(kw in text_lower for kw in kw_bs_end):
+                current_section = None
+        elif current_section == 'is':
+            relevant_pages['income_statement'].append(i)
+            if any(kw in text_lower for kw in kw_is_end):
+                current_section = None
             
-    # Refine: usually these statements are early in the document (financial part)
-    # but after general info.
-    # Take top 3 max to affect context window? 
-    # Let's just return what we found, strict filtering will be done by LLM loop if needed.
-    
     return relevant_pages
 
 @retry(stop=stop_after_attempt(3), wait=wait_fixed(2))
@@ -109,7 +131,7 @@ def analyze_page_with_llm(text_content: str) -> ExtractedFinancials:
     
     try:
         completion = client.beta.chat.completions.parse(
-            model="gpt-5-2025-08-07",
+            model="grok-4-1-fast-reasoning",
             messages=[
                 {"role": "system", "content": system_prompt},
                 {"role": "user", "content": f"Extract financial data from this text:\n\n{text_content}"},
