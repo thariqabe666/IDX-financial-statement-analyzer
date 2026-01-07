@@ -17,7 +17,7 @@ class BalanceSheet(BaseModel):
 class IncomeStatement(BaseModel):
     revenues: Optional[FinancialMetric] = Field(None, description="Pendapatan Usaha / Penjualan Bersih / Revenues")
     gross_profit: Optional[FinancialMetric] = Field(None, description="Laba Bruto / Gross Profit")
-    net_income: Optional[FinancialMetric] = Field(None, description="Laba Bersih Tahun Berjalan / Profit for the Year")
+    net_income: Optional[FinancialMetric] = Field(None, description="Laba Bersih Periode Berjalan / Net Profit for the Period")
     finance_cost: Optional[FinancialMetric] = Field(None, description="Beban Keuangan / Finance Costs")
 
 class ExtractedFinancials(BaseModel):

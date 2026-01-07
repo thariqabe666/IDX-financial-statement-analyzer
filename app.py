@@ -10,19 +10,149 @@ st.set_page_config(page_title="IDX Financial Analyzer", layout="wide")
 # Custom CSS for Premium Look
 st.markdown("""
     <style>
-    .main {
-        background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Outfit:wght@400;600;700&display=swap');
+
+    /* Target the root and all app containers */
+    .stApp, [data-testid="stAppViewContainer"], [data-testid="stMainViewContainer"] {
+        background: linear-gradient(135deg, #020617 0%, #0f172a 100%) !important;
+        background-attachment: fixed !important;
+        color: #f8fafc !important;
+        font-family: 'Outfit', sans-serif !important;
     }
-    .stMetric {
-        background-color: rgba(255, 255, 255, 0.4);
-        padding: 20px;
-        border-radius: 15px;
-        backdrop-filter: blur(10px);
-        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-        border: 1px solid rgba(255, 255, 255, 0.3);
+
+    /* Transparency for header */
+    [data-testid="stHeader"] {
+        background-color: rgba(0,0,0,0) !important;
     }
+
+    /* Custom scrollbar */
+    ::-webkit-scrollbar {
+        width: 8px;
+    }
+    ::-webkit-scrollbar-track {
+        background: #0f172a;
+    }
+    ::-webkit-scrollbar-thumb {
+        background: #334155;
+        border-radius: 10px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+        background: #475569;
+    }
+
+    /* Specific glassmorphism for Metrics */
+    div[data-testid="stMetric"], .stMetric, div[data-testid="metric-container"] {
+        background-color: rgba(30, 41, 59, 0.45) !important;
+        border: 1px solid rgba(255, 255, 255, 0.1) !important;
+        padding: 24px !important;
+        border-radius: 24px !important;
+        backdrop-filter: blur(20px) !important;
+        box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.4), 0 4px 6px -2px rgba(0, 0, 0, 0.2) !important;
+        transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1) !important;
+        margin-bottom: 1.5rem !important;
+    }
+    
+    div[data-testid="stMetric"]:hover {
+        transform: translateY(-8px) scale(1.02) !important;
+        background-color: rgba(30, 41, 59, 0.7) !important;
+        border: 1px solid rgba(59, 130, 246, 0.5) !important;
+        box-shadow: 0 25px 30px -10px rgba(0, 0, 0, 0.6) !important;
+    }
+
+    /* Metric internal text colors */
+    [data-testid="stMetricLabel"] p {
+        color: #94adcf !important;
+        font-size: 1rem !important;
+        font-weight: 600 !important;
+        letter-spacing: 0.025em !important;
+    }
+    
+    [data-testid="stMetricValue"] {
+        color: #ffffff !important;
+        font-weight: 700 !important;
+    }
+    
+    /* Ensure the metric value container doesn't have its own background/border */
+    [data-testid="stMetricValue"] > div {
+        background: transparent !important;
+    }
+
+    /* Buttons */
+    .stButton>button {
+        background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%) !important;
+        color: white !important;
+        border: none !important;
+        padding: 0.6rem 1.5rem !important;
+        border-radius: 12px !important;
+        font-weight: 600 !important;
+        font-family: 'Inter', sans-serif !important;
+        transition: all 0.3s ease !important;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.2) !important;
+        width: 100% !important;
+    }
+
+    .stButton>button:hover {
+        transform: translateY(-2px) !important;
+        box-shadow: 0 10px 15px -3px rgba(37, 99, 235, 0.4) !important;
+        background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%) !important;
+    }
+
+    /* File Uploader */
+    [data-testid="stFileUploader"] {
+        background-color: rgba(30, 41, 59, 0.3) !important;
+        border: 2px dashed rgba(255, 255, 255, 0.1) !important;
+        border-radius: 15px !important;
+        padding: 30px !important;
+    }
+    
+    [data-testid="stFileUploadDropzone"] {
+        border: none !important;
+        background: transparent !important;
+    }
+
+    /* Success/Warning/Error Alerts */
     .stAlert {
-        border-radius: 15px;
+        background-color: rgba(30, 41, 59, 0.5) !important;
+        color: #f8fafc !important;
+        border: 1px solid rgba(255, 255, 255, 0.05) !important;
+        border-radius: 16px !important;
+        backdrop-filter: blur(12px) !important;
+    }
+    
+    h1, h2, h3 {
+        color: #ffffff !important;
+        font-family: 'Outfit', sans-serif !important;
+        font-weight: 700 !important;
+    }
+
+    /* Expander styling */
+    .streamlit-expanderHeader {
+        background-color: rgba(30, 41, 59, 0.3) !important;
+        border-radius: 10px !important;
+        border: 1px solid rgba(255, 255, 255, 0.05) !important;
+    }
+    
+    .streamlit-expanderContent {
+        background-color: rgba(30, 41, 59, 0.2) !important;
+        border-radius: 0 0 10px 10px !important;
+    }
+
+    /* JSON and Code blocks */
+    pre, code {
+        background-color: rgba(15, 23, 42, 0.6) !important;
+        border-radius: 8px !important;
+        color: #e2e8f0 !important;
+    }
+
+    /* Progress Bar */
+    .stProgress > div > div > div > div {
+        background-image: linear-gradient(to right, #3b82f6, #60a5fa) !important;
+    }
+
+    /* Input focus */
+    .stTextInput input:focus {
+        border-color: #3b82f6 !important;
+        box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.5) !important;
     }
     </style>
     """, unsafe_allow_html=True)

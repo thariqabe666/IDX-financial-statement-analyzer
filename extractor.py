@@ -115,7 +115,7 @@ def analyze_page_with_llm(text_content: str) -> ExtractedFinancials:
     
     try:
         completion = client.beta.chat.completions.parse(
-            model="gpt-4o",
+            model="gpt-5-mini-2025-08-07",
             messages=[
                 {"role": "system", "content": system_prompt},
                 {"role": "user", "content": f"Extract financial data from this text:\n\n{text_content}"},
