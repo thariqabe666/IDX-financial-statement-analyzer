@@ -203,9 +203,6 @@ if uploaded_file is not None:
         if final_data:
             st.success(f"Analisis Selesai: **{final_data.company_name}** ({final_data.report_period})")
             
-            if final_data.is_psak_111:
-                st.warning("⚠️ Data diprioritaskan dari halaman **Laporan Tambahan (Setelah PSAK 111)**.")
-
             # Display Extraction Metadata
             with st.expander("🔍 Detail Ekstraksi AI"):
                 st.json(final_data.model_dump())

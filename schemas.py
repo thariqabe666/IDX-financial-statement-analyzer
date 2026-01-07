@@ -22,8 +22,7 @@ class IncomeStatement(BaseModel):
 
 class ExtractedFinancials(BaseModel):
     company_name: str = Field(..., description="Nama Perusahaan")
-    report_period: str = Field(..., description="Periode Laporan (misal: '31 Maret 2025')")
+    report_period: str = Field(..., description="Periode Laporan (misal: '31 Maret 2025'). CATATAN: Jika ada 2 periode, pilih yang terbaru")
     currency: str = Field(..., description="Mata Uang Laporan (IDR/USD)")
-    is_psak_111: bool = Field(False, description="Set True jika data ini berasal dari halaman penyesuaian/lampiran 'Setelah PSAK 111'")
     balance_sheet: BalanceSheet
     income_statement: IncomeStatement
