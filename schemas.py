@@ -24,5 +24,7 @@ class ExtractedFinancials(BaseModel):
     company_name: str = Field(..., description="Nama Perusahaan")
     report_period: str = Field(..., description="Periode Laporan (misal: '31 Maret 2025'). CATATAN: Jika ada 2 periode, pilih yang terbaru")
     currency: str = Field(..., description="Mata Uang Laporan (IDR/USD)")
+    scale: str = Field(..., description="Skala laporan (misal: 'Dalam Jutaan Rupiah', 'In Billions of IDR')")
+    unit_multiplier: float = Field(..., description="Multiplier angka (misal: Jutaan=1000000, Miliaran=1000000000, Satuan Penuh=1)")
     balance_sheet: BalanceSheet
     income_statement: IncomeStatement

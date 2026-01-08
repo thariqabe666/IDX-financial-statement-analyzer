@@ -159,7 +159,7 @@ st.markdown("""
 
 st.title("📊 IDX Financial Analyzer (LLM-First)")
 st.markdown("""
-Aplikasi ini menggunakan **LLM (GPT-4o)** untuk ekstraksi data laporan keuangan yang lebih cerdas dan fleksibel.
+Aplikasi ini menggunakan **LLM (Grok 4.1 Fast Reasoning)** untuk ekstraksi data laporan keuangan yang lebih cerdas dan fleksibel.
 """)
 
 uploaded_file = st.file_uploader("Upload Laporan Keuangan (PDF)", type="pdf")
@@ -185,15 +185,23 @@ if uploaded_file is not None:
             
             # 3. Analyze with LLM
             extracted_results = []
+            usage_stats = {
+                "prompt_tokens": 0,
+                "completion_tokens": 0,
+                "cached_tokens": 0
+            }
             progress_bar = st.progress(0)
             total = len(indices)
             
             for i, idx in enumerate(indices):
                 progress_bar.progress((i + 1) / total)
                 st.write(f"📝 Memproses Halaman {idx + 1}...")
-                result = analyze_page_with_llm(pages_text[idx])
+                result, usage = analyze_page_with_llm(pages_text[idx])
                 if result:
                     extracted_results.append(result)
+                    usage_stats["prompt_tokens"] += usage.get("prompt_tokens", 0)
+                    usage_stats["completion_tokens"] += usage.get("completion_tokens", 0)
+                    usage_stats["cached_tokens"] += usage.get("cached_tokens", 0)
             
             # 4. Merge
             final_data = merge_financials(extracted_results)
@@ -210,8 +218,31 @@ if uploaded_file is not None:
             # 5. Calculate Ratios
             ratios = calculate_ratios_structured(final_data)
 
+            # 5b. Calculate Cost
+            # Pricing: Input: $0.20/1M, Cached: $0.05/1M, Output: $0.50/1M
+            input_cost = ((usage_stats["prompt_tokens"] - usage_stats["cached_tokens"]) * 0.20) / 1_000_000
+            cached_cost = (usage_stats["cached_tokens"] * 0.05) / 1_000_000
+            output_cost = (usage_stats["completion_tokens"] * 0.50) / 1_000_000
+            total_cost = input_cost + cached_cost + output_cost
+
             # 6. Display Dashboard
             st.markdown("---")
+            
+            # Usage and Cost Metrics in Sidebar or Top
+            with st.sidebar:
+                st.header("⚡ AI Usage & Cost")
+                st.metric("Total Cost", f"${total_cost:.4f}")
+                st.write("---")
+                st.write("**Token Breakdown:**")
+                st.write(f"- Input Tokens: `{usage_stats['prompt_tokens']:,}`")
+                st.write(f"  - *Cached:* `{usage_stats['cached_tokens']:,}`")
+                st.write(f"- Output Tokens: `{usage_stats['completion_tokens']:,}`")
+                st.write("---")
+                st.write("**Pricing Model:**")
+                st.caption("- Input: $0.20 / 1M tokens")
+                st.caption("- Cached: $0.05 / 1M tokens")
+                st.caption("- Output: $0.50 / 1M tokens")
+
             st.header("📈 Financial Performance Dashboard")
             
             # Highlights
